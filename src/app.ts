@@ -99,7 +99,7 @@ export function createApp(db: DatabaseSync) {
       return c.json({ error: "prazo encerrado" }, 409);
     }
 
-    const existing = one<Ledger>(db, "SELECT * FROM ledger WHERE idempotency_key = ?", key);
+    const existing = one<Ledger>(db, "SELECT * FROM ledger WHERE mission_id = ?", mission.id);
     if (existing) {
       const payout = one<Payout>(db, "SELECT * FROM payouts WHERE mission_id = ?", mission.id) ?? null;
       return c.json({ mission_id: mission.id, status: mission.status, ledger: existing, payout });
