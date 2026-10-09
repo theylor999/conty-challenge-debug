@@ -18,7 +18,7 @@ async function ledgerOf(app: App, missionId: string) {
   return ((await res.json()) as { ledger: Array<{ amount_brl: number }> }).ledger;
 }
 
-describe("casos do incidente que o log mostra", () => {
+describe("casos do incidente que a suíte original não nomeava", () => {
   let app: App;
 
   beforeEach(() => {
@@ -62,6 +62,16 @@ describe("casos do incidente que o log mostra", () => {
     const retry = await postJson(app, "/approvals", { ...payload, idempotency_key: "pay_7c1\u200b" });
     expect(retry.status).toBe(200);
     expect(await ledgerOf(app, "msn_2044")).toHaveLength(1);
+  });
+
+  it("grava a chave sem caracteres invisíveis, espaços e maiúsculas", async () => {
+    const res = await postJson(app, "/approvals", {
+      mission_id: "msn_2044",
+      approved_at: "2026-03-12T21:05:00.000Z",
+      idempotency_key: " PAY_7c1\u200b ",
+    });
+    const { ledger } = (await res.json()) as { ledger: { idempotency_key: string } };
+    expect(ledger.idempotency_key).toBe("pay_7c1");
   });
 
   it("recusa chave que só tem caracteres invisíveis", async () => {
